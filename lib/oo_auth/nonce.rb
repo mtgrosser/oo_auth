@@ -9,9 +9,10 @@ module OoAuth
         OoAuth.nonce_store || fail(ConfigurationError, 'no nonce store set')
       end
 
-      def create(value, timestamp)
+      def remember(value, timestamp)
         store.create(value, timestamp)
       end
+      alias :create :remember
       
       def generate
         new(OoAuth.generate_nonce, Time.now.utc.to_i)

@@ -51,7 +51,17 @@ module OoAuth
     end
     
     def valid?(authorization)
-      authorization.calculate_signature(self, oauth_params.except('oauth_signature')) == self.signature
+      authorization.calculate_signature(self, oauth_params.except('oauth_signature')) == self.signature and
+      valid_timestamp? and
+      remember_nonce!
+    end
+    
+    def valid_timestamp?
+      (OoAuth.timestamp - timestamp.to_i).abs < MAX_TIMESTAMP_DEVIATION
+    end
+    
+    def remember_nonce!
+      Nonce.remember(nonce, timestamp)
     end
     
     def normalized_request_uri

@@ -1,3 +1,6 @@
+require 'openssl'
+require 'uri'
+
 module OoAuth
   # Initialize with instance of store
   # OoAuth.nonce_store = OoAuth::Nonce::RedisStore.new(namespace: 'foo')
@@ -27,6 +30,8 @@ module OoAuth
   
   # OoAuth only supports HMAC-SHA1
   SIGNATURE_METHOD = 'HMAC-SHA1'
+  
+  MAX_TIMESTAMP_DEVIATION = 5 * 60
   
   require 'oo_auth/configuration_error'
   require 'oo_auth/nonce'
