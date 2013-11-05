@@ -51,7 +51,7 @@ module OoAuth
     end
     
     def valid?(authorization)
-      authorization.calculate_signature(self, oauth_params) == self.signature
+      authorization.calculate_signature(self, oauth_params.except('oauth_signature')) == self.signature
     end
     
     def normalized_request_uri
