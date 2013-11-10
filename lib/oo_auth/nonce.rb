@@ -5,20 +5,6 @@ module OoAuth
     attr_reader :value, :timestamp, :errors
     
     class << self
-      def store
-        OoAuth.nonce_store || fail(ConfigurationError, 'no nonce store set')
-      end
-
-      def create(nonce)
-        if store.respond_to?(:call)
-          store.call(nonce)
-        elsif store.respond_to?(:create)
-          store.create(nonce)
-        else
-          fail ConfigurationError, 'nonce store not callable'
-        end
-      end
-
       def remember(value, timestamp)
         new(value, timestamp).save
       end
@@ -41,7 +27,22 @@ module OoAuth
     end
     
     def save
-      !!(valid? && self.class.create(self))
+      return false unless valid?
+      if store.respond_to?(:call)
+        store.call(self)
+      elsif store.respond_to?(:remember)
+        store.remember(self)
+      else
+        fail ConfigurationError, 'nonce store not callable'
+      end
+    end
+
+    end
+
+    private
+    
+    def store
+      OoAuth.nonce_store || fail(ConfigurationError, 'no nonce store set')
     end
     
   end

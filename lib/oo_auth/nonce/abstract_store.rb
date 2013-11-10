@@ -3,7 +3,7 @@ module OoAuth
     class AbstractStore
   
       class << self
-        def create(nonce)
+        def remember(nonce)
           #
         end  
       end

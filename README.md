@@ -26,32 +26,6 @@ In your Gemfile:
 gem 'oo_auth'
 ```
 
-## Prerequisites
-
-OoAuth requires your application to provide stores for authorization tokens 
-and OAuth nonces.
-
-OoAuth stores can be simple lambdas or regular ruby objects.
-
-### Authorization store
-
-The authorization store should return an instance of ```OoAuth::Credentials```.
-It can either be a lambda or an object implementing the `authorization` method.
-
-```ruby
-# your own implementation in SomeClass model
-OoAuth.authorization_store = lambda { |consumer_key, token| SomeClass.find_by_tokens(consumer_key, token) }
-```
-```ruby
-# direct lookup
-OoAuth.authorization_store = User
-```
-### Nonce store
-```ruby
-require 'oo_auth/nonce/redis_store'
-
-OoAuth.nonce_store = OoAuth::Nonce::RedisStore.new(namespace: 'foobar')
-```
 ## Use
 
 ### OAuth consumer
@@ -74,7 +48,7 @@ request['Authorization']
 ### OAuth provider
 
 ```ruby
-class FoobarController < ApplicationController
+class ApiController < ApplicationController
 
   before_filter :oauth_required
 
@@ -85,11 +59,87 @@ class FoobarController < ApplicationController
       self.current_user = authorization.user
     else
       render nothing: true, status: 401
+      false
     end
   end
+end
 ```
 
+## Prerequisites for OAuth providers
+
+OoAuth requires your provider application to provide stores for authorization tokens 
+and OAuth nonces. (You won't need these stores if you're only using OoAuth's client
+functionality.)
+
+OoAuth stores can be as simple lambdas or regular ruby objects.
+
+### Authorization store
+
+The authorization store is used for looking up OAuth credentials. It could for example
+be an API account or user model. OoAuth will query the authorization store by calling
+its method `authorization(consumer_key, token)` if it is a regular object, or just
+call it with the same arguments if it is a lambda.
+
+When the consumer key and token combination actually exists, the call should return
+an object representing the API account (e.g. user instance, API account instance).
+
+This instance again must implement the method `:credentials`, and return an instance
+of `OoAuth::Credentials` initialized with the account's full credential set.
+
+```ruby
+
+# app/models/api_account.rb
+class ApiAccount < ActiveRecord::Base
+
+  def self.authorization(consumer_key, token)
+    where(consumer_key: consumer_key, token: token).first
+  end
+  
+  def credentials
+    OoAuth::Credentials.new(consumer_key, consumer_secret, token, token_secret)
+  end
+end
+
+# config/initializers/oo_auth.rb
+OoAuth.authorization_store =  ApiAccount
+```
+
+### Nonce store
+
+The nonce store is needed by provider applications to temporarily store OAuth nonces.
+It must provide a `remember(nonce)` method or be a callable proc, where `nonce` is an
+instance of `OoAuth::Nonce`. 
+
+The store must ensure that each tuple `(timestamp, nonce value)` is only created once.
+This is required by the OAuth spec in order to prevent replay attacks.
+
+```ruby
+# app/models/nonce.rb
+class Nonce < ActiveRecord::Base
+  validates_presence_of :value, :timestamp
+  validates_uniqueness_of :value, scope: :timestamp
+  
+  def self.remember(ooauth_nonce)
+    new(value: ooauth_nonce.value, ooauth_nonce.timestamp).save
+  end
+end
+
+# config/initializers/oo_auth.rb
+OoAuth.nonce_store = Nonce
+```
+
+OoAuth comes with a pre-defined Redis nonce store, which can be enabled as following:
+```ruby
+# Gemfile
+gem 'redis'
+
+# config/initializers/oo_auth.rb
+require 'oo_auth/nonce/redis_store'
+
+OoAuth.nonce_store = OoAuth::Nonce::RedisStore.new(namespace: 'foobar')
+```
 
 ## TODO
 
-* Support POST body signing
+* Support POST body signing for non-formencoded data
+  http://oauth.googlecode.com/svn/spec/ext/body_hash/1.0/oauth-bodyhash.html
