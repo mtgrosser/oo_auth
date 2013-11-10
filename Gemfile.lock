@@ -18,6 +18,7 @@ GEM
       multi_json (~> 1.0)
       simplecov-html (~> 0.7.1)
     simplecov-html (0.7.1)
+    timecop (0.6.3)
 
 PLATFORMS
   ruby
@@ -28,3 +29,4 @@ DEPENDENCIES
   oo_auth!
   rake (>= 0.8.7)
   simplecov
+  timecop (~> 0.6.3)

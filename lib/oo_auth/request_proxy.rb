@@ -1,7 +1,7 @@
 module OoAuth
   class RequestProxy
 
-    attr_reader :port, :ssl, :host, :path, :headers, :method
+    attr_reader :port, :ssl, :host, :path, :headers, :method, :body
 
     class << self
       
@@ -16,7 +16,7 @@ module OoAuth
       #
       def parse(header)
         header = header.to_s
-        return unless header.starts_with?('OAuth ')
+        return unless header.start_with?('OAuth ')
         # decompose
         params = header[6, header.length].split(',').inject({}) do |hsh, str|
           key, value = str.split('=').map { |s| OoAuth.unescape(s.strip) }
@@ -48,6 +48,7 @@ module OoAuth
         raise ArgumentError, 'wrong number of arguments'
       end
       @method = request.method
+      @body = request.body
     end
     
     def normalized_request_uri
@@ -71,6 +72,12 @@ module OoAuth
       self.class.parse(authorization)
     end
     
+    def oauth_params_without_signature
+      params = oauth_params
+      params.delete('oauth_signature')
+      params
+    end
+    
     def authorization
       headers['Authorization']
     end
@@ -85,19 +92,28 @@ module OoAuth
       end
     end
     
+    def post?
+      'POST' == method
+    end
+    
     def signature_base_string(params = {})
       encoded_params = params_encode(params_array(self) + params_array(params))
       OoAuth.encode(method, normalized_request_uri, encoded_params)
     end
 
     # FIXME: cf nested params implementation in oauth gem
+    # TODO: support oauth body signature for non-formencoded content types
     def params_array(object)
       case object
-      when Array then return object
-      when Hash then return object.to_a
+      when Array then object
+      when Hash then object.to_a
       when RequestProxy
         tmp = object.path.split('?')
-        tmp[1] ? params_decode(tmp[1]) : []
+        params = tmp[1] ? params_decode(tmp[1]) : []
+        if object.post? && object.headers['Content-Type'].to_s.start_with?('application/x-www-form-urlencoded')
+          params.concat params_decode(object.body)
+        end
+        params
       else
         raise "error: cannot convert #{object.class} object to params array"
       end

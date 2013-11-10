@@ -24,7 +24,7 @@ module OoAuth
     
     def valid?
       @errors = []
-      @errors << 'nonce value cannot be blank' if value.blank?
+      @errors << 'nonce value cannot be blank' if value.to_s == ''
       @errors << 'nonce value too big' if value.size > MAX_LENGTH
       @errors << 'illegal nonce timestamp' if timestamp <= 0
       @errors.empty?

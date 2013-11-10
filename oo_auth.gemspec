@@ -24,5 +24,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency(%q<simplecov>, [">= 0"])
   s.add_development_dependency(%q<rake>, [">= 0.8.7"])
   s.add_development_dependency(%q<minitest>, ["~> 4.7"])
+  s.add_development_dependency(%q<timecop>, ["~> 0.6.3"])
 end
 

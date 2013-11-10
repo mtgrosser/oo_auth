@@ -1,9 +1,11 @@
 class ActionDispatchMockRequest
   
-  attr_reader :method, :port, :ssl, :fullpath, :host, :headers
+  attr_reader :method, :port, :ssl, :fullpath, :host, :headers, :body
   
-  def initialize(method, host, port, fullpath, ssl, headers = {})
-    @method, @host, @port, @fullpath, @headers, @ssl = method, host, port, fullpath, headers, ssl
+  def initialize(method, host, port, fullpath, ssl, options = {})
+    @method, @host, @port, @fullpath, @ssl = method, host, port, fullpath, ssl
+    @headers = options[:headers] || {}
+    @body = options[:body]
   end
   
   def ssl?

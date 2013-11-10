@@ -25,12 +25,9 @@ require 'bundler/setup'
 Bundler.require(:default)
 
 require 'minitest/autorun'
+require 'timecop'
+require 'byebug'
 
 require 'oo_auth'
 
-require 'byebug'
-
 Pathname.glob(Pathname.new(__FILE__).dirname.join('models').join('*.rb')).each { |model| require model.to_s.sub(/\.rb\z/, '') }
-
-OoAuth.nonce_store = MockNonceStore
-OoAuth.authorization_store = MockAuthorizationStore

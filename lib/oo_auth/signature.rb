@@ -25,10 +25,15 @@ module OoAuth
         proxy.authorization = authorization_header(params)
       end
       
+      # Check signature validity without remembering nonce - DO NOT use to authorize actual requests
+      def valid?(proxy, credentials)
+        verify_timestamp!(proxy) &&
+        calculate_signature(proxy, credentials, proxy.oauth_params_without_signature) == proxy.signature
+      end
+      
+      # Verify signature and remember nonce - use this to authorize actual requests
       def verify!(proxy, credentials)
-        verify_timestamp!(proxy) and
-        calculate_signature(proxy, credentials, proxy.oauth_params.except('oauth_signature')) == proxy.signature and
-        remember_nonce!(proxy)
+        valid?(proxy, credentials) && remember_nonce!(proxy)
       end
       
       private
@@ -37,7 +42,7 @@ module OoAuth
         (OoAuth.timestamp - proxy.timestamp.to_i).abs < MAX_TIMESTAMP_DEVIATION
       end
 
-      def remember_nonce!
+      def remember_nonce!(proxy)
         Nonce.remember(proxy.nonce, proxy.timestamp)
       end
       

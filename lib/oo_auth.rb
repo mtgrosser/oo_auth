@@ -21,13 +21,14 @@ module OoAuth
 
   
     # Define a lookup method for access token verification
-    # It should be callable (proc) or respond to +authorizer+ method,
-    # with the argument being the consumer key.
+    # It should be callable (proc) or provide an +authorization+ method,
+    # with the argument being the consumer key and token.
     # The proc or method call should return
-    # - if the consumer key exists:
-    #   an object which responding to +authorization+ with an instance of 
-    #   OoAuth::Authorization
-    # - nil if the consumer key is unknown.
+    # - if the consumer key/token combination exists:
+    #   an object which responding to +credentials+ with an 
+    #   initialized instance of 
+    #   OoAuth::Credentials
+    # - nil otherwise.
     attr_accessor :authorization_store
     
     # Generate a random key of up to +size+ bytes. The value returned is Base64 encoded with non-word
@@ -57,12 +58,12 @@ module OoAuth
       components.map { |component| OoAuth.escape(component) }.join('&')
     end
     
+    # Current UTC timestamp
     def timestamp
       Time.now.utc.to_i
     end
     
     def authorization(consumer_key, token)
-      return if consumer_key.blank?
       if authorization_store.respond_to?(:call)
         authorization_store.call(consumer_key, token)
       elsif authorization_store.respond_to?(:authorization)
@@ -72,10 +73,12 @@ module OoAuth
       end
     end
     
-    def authenticate!(*args)
+    # Use this in your controllers to verify the OAuth signature
+    # of a request.
+    def authorize!(*args)
       proxy = RequestProxy.new(*args)
       return unless authorization = self.authorization(proxy.consumer_key, proxy.token)
-      return unless Signature.verify!(proxy, credentials)
+      return unless Signature.verify!(proxy, authorization.credentials)
       authorization
     end
     

@@ -15,7 +15,7 @@ module OoAuth
     end
     
     def attributes
-      AUTH_ATTRIBUTES.hmap { |attr| send(attr) }
+      AUTH_ATTRIBUTES.inject({}) { |hsh, attr| hsh.update(attr => send(attr)) }
     end
     
   end
