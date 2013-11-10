@@ -9,6 +9,16 @@ module OoAuth
         OoAuth.nonce_store || fail(ConfigurationError, 'no nonce store set')
       end
 
+      def create(nonce)
+        if store.respond_to?(:call)
+          store.call(self)
+        elsif store.respond_to?(:create)
+          store.create(self)
+        else
+          fail ConfigurationError, 'nonce store not callable'
+        end
+      end
+
       def remember(value, timestamp)
         new(value, timestamp).save
       end

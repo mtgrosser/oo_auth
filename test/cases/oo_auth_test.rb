@@ -221,4 +221,17 @@ class OoAuthTest < MiniTest::Unit::TestCase
     assert nonce.timestamp >= Time.now.utc.to_i
     assert nonce.value.size > 5
   end
+  
+  def test_signing_net_http_request
+    http = Net::HTTP.new('photos.example.net', Net::HTTP.http_default_port)
+    request = Net::HTTP::Get.new('/photos?file=vacation.jpg&size=original')
+
+    credentials = OoAuth::Credentials.new('consumer_key',
+                                          'consumer_secret',
+                                          'access_token',
+                                          'access_token_secret')
+
+    OoAuth.sign!(http, request, credentials)
+    assert request['Authorization'].start_with?('OAuth ')
+  end
 end
