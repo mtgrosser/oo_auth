@@ -37,8 +37,6 @@ module OoAuth
       end
     end
 
-    end
-
     private
     
     def store

@@ -4,7 +4,7 @@ class MockNonceStore < OoAuth::Nonce::AbstractStore
     @nonces ||= {}
   end
   
-  def create(nonce)
+  def remember(nonce)
     return false if nonces.has_key?(key(nonce))
     nonces[key(nonce)] = nonce
   end

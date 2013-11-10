@@ -33,7 +33,7 @@ module OoAuth
       
       # Verify signature and remember nonce - use this to authorize actual requests
       def verify!(proxy, credentials)
-        valid?(proxy, credentials) && remember_nonce!(proxy)
+        !!(valid?(proxy, credentials) && remember_nonce!(proxy))
       end
       
       private

@@ -210,7 +210,7 @@ class OoAuthTest < MiniTest::Unit::TestCase
   
   def test_nonce_store_proc
     store = MockNonceStore.new
-    OoAuth.nonce_store = lambda { |nonce| store.create(nonce) }
+    OoAuth.nonce_store = lambda { |nonce| store.remember(nonce) }
     assert OoAuth::Nonce.remember('foo', 123456)
     assert_equal false, OoAuth::Nonce.remember('foo', 123456)
   end
