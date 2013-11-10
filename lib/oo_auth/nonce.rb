@@ -11,9 +11,9 @@ module OoAuth
 
       def create(nonce)
         if store.respond_to?(:call)
-          store.call(self)
+          store.call(nonce)
         elsif store.respond_to?(:create)
-          store.create(self)
+          store.create(nonce)
         else
           fail ConfigurationError, 'nonce store not callable'
         end
@@ -41,7 +41,7 @@ module OoAuth
     end
     
     def save
-      !!(valid? && self.class.store.create(self))
+      !!(valid? && self.class.create(self))
     end
     
   end

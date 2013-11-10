@@ -208,6 +208,20 @@ class OoAuthTest < MiniTest::Unit::TestCase
     end
   end
   
+  def test_nonce_store_proc
+    store = MockNonceStore.new
+    OoAuth.nonce_store = lambda { |nonce| store.create(nonce) }
+    assert OoAuth::Nonce.remember('foo', 123456)
+    assert_equal false, OoAuth::Nonce.remember('foo', 123456)
+  end
+  
+  def test_nocne_store_raises_configuration_error
+    OoAuth.nonce_store = Object.new
+    assert_raises OoAuth::ConfigurationError do
+      OoAuth::Nonce.remember('bar', 123456)
+    end
+  end
+  
   def test_credentials
     credentials = OoAuth::Credentials.generate
     assert_kind_of OoAuth::Credentials, credentials
