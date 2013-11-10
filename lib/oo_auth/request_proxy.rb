@@ -50,20 +50,6 @@ module OoAuth
       @method = request.method
     end
     
-    def valid?(authorization)
-      authorization.calculate_signature(self, oauth_params.except('oauth_signature')) == self.signature and
-      valid_timestamp? and
-      remember_nonce!
-    end
-    
-    def valid_timestamp?
-      (OoAuth.timestamp - timestamp.to_i).abs < MAX_TIMESTAMP_DEVIATION
-    end
-    
-    def remember_nonce!
-      Nonce.remember(nonce, timestamp)
-    end
-    
     def normalized_request_uri
       if self.port == Net::HTTP.default_port
         scheme, port = :http, nil
@@ -82,7 +68,15 @@ module OoAuth
     end
     
     def oauth_params
-      self.class.parse(headers['Authorization'])
+      self.class.parse(authorization)
+    end
+    
+    def authorization
+      headers['Authorization']
+    end
+    
+    def authorization=(header)
+      headers['Authorization'] = header
     end
     
     PARAMETERS.each do |parameter|

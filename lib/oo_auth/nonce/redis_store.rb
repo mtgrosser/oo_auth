@@ -10,8 +10,7 @@ module OoAuth
         @redis = Redis.new(options)
       end
 
-      def create(nonce_value, timestamp)
-        nonce = Nonce.new(nonce_value, timestamp)
+      def create(nonce)
         return nonce if @redis.set(key(nonce), '1', { nx: true, ex: ttl })
         false
       rescue Errno::ECONNREFUSED
