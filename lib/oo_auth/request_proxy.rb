@@ -88,7 +88,8 @@ module OoAuth
     
     PARAMETERS.each do |parameter|
       define_method "#{parameter[6..-1]}" do
-        oauth_params[parameter]
+        params = oauth_params
+        params && params[parameter]
       end
     end
     

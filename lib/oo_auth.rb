@@ -15,8 +15,8 @@ require 'oo_auth/signature'
 module OoAuth
   
   class << self
-  # Initialize with instance of store
-  # OoAuth.nonce_store = OoAuth::Nonce::RedisStore.new(namespace: 'foo')
+    # Initialize with instance of store
+    # OoAuth.nonce_store = OoAuth::Nonce::RedisStore.new(namespace: 'foo')
     attr_accessor :nonce_store
 
   

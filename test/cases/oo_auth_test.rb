@@ -194,6 +194,11 @@ class OoAuthTest < MiniTest::Unit::TestCase
     assert_equal 1, OoAuth.nonce_store.nonces.size
     assert_kind_of MockAuthorization, authorization
   end
+
+  def test_authorization_failure
+    request = ActionDispatchMockRequest.new('GET', 'photos.example.net', 80, '/photos?file=vacation.jpg&size=original', false)
+    assert_nil OoAuth.authorize!(request)
+  end
   
   def test_authorization_store_proc
     OoAuth.authorization_store = lambda { |consumer_key, token| MockAuthorization.new if 'ck' == consumer_key && 'at' == token }
