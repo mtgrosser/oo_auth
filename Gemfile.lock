@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    oo_auth (0.1.0)
+    oo_auth (1.0.0)
 
 GEM
   remote: https://rubygems.org/
@@ -30,3 +30,6 @@ DEPENDENCIES
   rake (>= 0.8.7)
   simplecov
   timecop (~> 0.6.3)
+
+BUNDLED WITH
+   1.10.6

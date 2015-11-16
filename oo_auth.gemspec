@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version = OoAuth::VERSION
 
   s.authors = ["Matthias Grosser"]
-  s.date = "2013-11-04"
+  s.date = "2015-11-16"
   s.description = "Out Of Band OAuth"
   s.email = "mtgrosser@gmx.net"
   s.homepage = "http://github.com/mtgrosser/oo_auth"
@@ -16,6 +16,8 @@ Gem::Specification.new do |s|
   s.rubygems_version = "2.0.3"
   s.summary = "OAuth without the callbacks"
   s.license = 'MIT'
+  
+  s.required_ruby_version  = '>= 2.0'
 
   #s.add_dependency(%q<activesupport>, ["~> 3.2.13"])
   #s.add_dependency(%q<redis>, [">= 0"])

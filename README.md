@@ -139,6 +139,32 @@ require 'oo_auth/nonce/redis_store'
 OoAuth.nonce_store = OoAuth::Nonce::RedisStore.new(namespace: 'foobar')
 ```
 
+## Configuring signature methods
+
+The available signature methods can be configured using a setter which accepts
+signature method names as strings or symbols:
+
+```ruby
+# config/initializers/oo_auth.rb
+OoAuth.signature_methods = [:hmac_sha1, 'HMAC-SHA256', :hmac_sha512]
+```
+
+The default signature method OoAuth will use to sign requests is `HMAC-SHA1`.
+It can be set to any of the supported methods using
+
+```ruby
+OoAuth.signature_method = :hmac_sha256
+```
+
+As using `HMAC-SHA1` is no longer recommended, you can disable it altogether:
+
+```ruby
+# disable HMAC-SHA1 completely
+OoAuth.signature_methods = [:hmac_sha256]
+```
+
+A provider configured this way will only accept `HMAC-SHA256` signatures.
+
 ## TODO
 
 * Support POST body signing for non-formencoded data

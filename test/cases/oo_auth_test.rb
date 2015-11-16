@@ -23,10 +23,10 @@ class OoAuthTest < MiniTest::Unit::TestCase
   end
 
   def test_hmac_sha_1
-    assert_equal 'egQqG5AJep5sJ7anhXju1unge2I=', OoAuth::Signature.hmac_sha1_signature('bs', 'cs', nil)
-    assert_equal 'VZVjXceV7JgPq/dOTnNmEfO0Fv8=', OoAuth::Signature.hmac_sha1_signature('bs', 'cs', 'ts')
+    assert_equal 'egQqG5AJep5sJ7anhXju1unge2I=', OoAuth::Signature.send(:hmac_signature, 'HMAC-SHA1', 'bs', 'cs', nil)
+    assert_equal 'VZVjXceV7JgPq/dOTnNmEfO0Fv8=', OoAuth::Signature.send(:hmac_signature, 'HMAC-SHA1', 'bs', 'cs', 'ts')
     base_string = 'GET&http%3A%2F%2Fphotos.example.net%2Fphotos&file%3Dvacation.jpg%26oauth_consumer_key%3Ddpf43f3p2l4k3l03%26oauth_nonce%3Dkllo9940pd9333jh%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1191242096%26oauth_token%3Dnnch734d00sl2jdk%26oauth_version%3D1.0%26size%3Doriginal'
-    assert_equal 'tR3+Ty81lMeYAr/Fid0kMTYa/WM=', OoAuth::Signature.hmac_sha1_signature(base_string, 'kd94hf93k423kf44', 'pfkkdhi9sl3r4s00')
+    assert_equal 'tR3+Ty81lMeYAr/Fid0kMTYa/WM=', OoAuth::Signature.send(:hmac_signature, 'HMAC-SHA1', base_string, 'kd94hf93k423kf44', 'pfkkdhi9sl3r4s00')
   end
   
   def test_signature_base_string_from_net_http_request
@@ -109,7 +109,7 @@ class OoAuthTest < MiniTest::Unit::TestCase
     request = Net::HTTP::Get.new('/?n=v')
     proxy = OoAuth::RequestProxy.new(http, request)
     
-    OoAuth::Signature.sign! proxy, MockAuthorization.new.credentials
+    OoAuth::Signature.sign! proxy, MockAuthorization.new.credentials, :hmac_sha1
 
     assert header = request['Authorization']
     assert_equal header, proxy.authorization
@@ -127,7 +127,7 @@ class OoAuthTest < MiniTest::Unit::TestCase
     request = ActionDispatchMockRequest.new('GET', 'example.com', 80, '/?n=v', false)
     proxy = OoAuth::RequestProxy.new(request)
     
-    OoAuth::Signature.sign! proxy, MockAuthorization.new.credentials
+    OoAuth::Signature.sign! proxy, MockAuthorization.new.credentials, :hmac_sha1
 
     assert header = request.headers['Authorization']
     assert_equal header, proxy.authorization
@@ -141,7 +141,7 @@ class OoAuthTest < MiniTest::Unit::TestCase
     assert_match /\boauth_signature="[^"]+"/, header
   end
   
-  def test_signing_net_http_post_request_with_urlencoded_body
+  def test_signing_net_http_post_request_with_urlencoded_body_using_hmac_sha1
     http = Net::HTTP.new('api.twitter.com', 443)
     http.use_ssl = true
     request = Net::HTTP::Post.new('/1/statuses/update.json?include_entities=true')
@@ -155,9 +155,28 @@ class OoAuthTest < MiniTest::Unit::TestCase
                      oauth_consumer_key: @twitter_credentials.consumer_key,
                      oauth_token: @twitter_credentials.token }
     
-    signature = OoAuth::Signature.calculate_signature(proxy, @twitter_credentials, oauth_params)
+    signature = OoAuth::Signature.send(:calculate_signature, proxy, @twitter_credentials, oauth_params, 'HMAC-SHA1')
     
     assert_equal 'tnnArxj06cWHq44gCs1OSKk/jLY=', signature
+  end
+  
+  def test_signing_net_http_post_request_with_urlencoded_body_using_hmac_sha256
+    http = Net::HTTP.new('api.twitter.com', 443)
+    http.use_ssl = true
+    request = Net::HTTP::Post.new('/1/statuses/update.json?include_entities=true')
+    request.body = 'status=Hello%20Ladies%20%2b%20Gentlemen%2c%20a%20signed%20OAuth%20request%21'
+    request['Content-Type'] = 'application/x-www-form-urlencoded'
+    proxy = OoAuth::RequestProxy.new(http, request)   
+    oauth_params = { oauth_version: '1.0',
+                     oauth_nonce: @twitter_nonce,
+                     oauth_timestamp: @twitter_timestamp,
+                     oauth_signature_method: 'HMAC-SHA256',
+                     oauth_consumer_key: @twitter_credentials.consumer_key,
+                     oauth_token: @twitter_credentials.token }
+    
+    signature = OoAuth::Signature.send(:calculate_signature, proxy, @twitter_credentials, oauth_params, 'HMAC-SHA256')
+    
+    assert_equal 'lrpvd+UOGVsQnRf5skaXYTNeIPFJ0C+qK3OGpK/XB9Q=', signature
   end
   
   def test_validating_action_dispatch_request
@@ -252,5 +271,11 @@ class OoAuthTest < MiniTest::Unit::TestCase
 
     OoAuth.sign!(http, request, credentials)
     assert request['Authorization'].start_with?('OAuth ')
+  end
+  
+  def test_setting_unsupported_signature_method_raises_error
+    assert_raises OoAuth::UnsupportedSignatureMethod do
+      OoAuth.signature_methods = [:hmac_sha1, :hmac_sha1024]
+    end
   end
 end

@@ -5,7 +5,7 @@ require 'base64'
 
 require 'oo_auth/version'
 require 'oo_auth/constants'
-require 'oo_auth/configuration_error'
+require 'oo_auth/errors'
 require 'oo_auth/nonce'
 require 'oo_auth/nonce/abstract_store'
 require 'oo_auth/request_proxy'
@@ -18,7 +18,6 @@ module OoAuth
     # Initialize with instance of store
     # OoAuth.nonce_store = OoAuth::Nonce::RedisStore.new(namespace: 'foo')
     attr_accessor :nonce_store
-
   
     # Define a lookup method for access token verification
     # It should be callable (proc) or provide an +authorization+ method,
@@ -30,6 +29,42 @@ module OoAuth
     #   OoAuth::Credentials
     # - nil otherwise.
     attr_accessor :authorization_store
+    
+    def signature_methods
+      @signature_methods ||= SUPPORTED_SIGNATURE_METHODS
+    end
+    
+    # Set the available signature methods
+    # You can either use strings or symbols, e.g.
+    # ['HMAC_SHA1', :hmac_sha256]
+    def signature_methods=(methods)
+      @signature_methods = methods.collect do |method|
+        method = method.to_s.upcase.sub('_', '-')
+        raise UnsupportedSignatureMethod, method.inspect unless SUPPORTED_SIGNATURE_METHODS.include?(method)
+        method
+      end
+    end
+    
+    # Check if the signature method is valid, raise error if not
+    #
+    # Supported values:
+    # - 'HMAC-SHA1'
+    # - 'HMAC-SHA256'
+    # - 'HMAC-SHA512'
+    #
+    def verify_signature_method!(value)
+      raise UnsupportedSignatureMethod, value.inspect unless signature_methods.include?(value)
+    end
+    
+    def signature_method
+      @signature_method ||= DEFAULT_SIGNATURE_METHOD
+    end
+
+    # Set the signature method to use
+    def signature_method=(value)
+      verify_signature_method!(value)
+      @signature_method = value
+    end
     
     # Generate a random key of up to +size+ bytes. The value returned is Base64 encoded with non-word
     # characters removed.
@@ -78,7 +113,7 @@ module OoAuth
       credentials = args.pop
       proxy = RequestProxy.new(*args)
       Signature.sign!(proxy, credentials)
-    end      
+    end
     
     # Use this in your controllers to verify the OAuth signature
     # of a request.
