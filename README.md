@@ -47,10 +47,12 @@ request['Authorization']
 
 ### OAuth provider
 
+In your Rails API controller:
+
 ```ruby
 class ApiController < ApplicationController
 
-  before_filter :oauth_required
+  before_action :oauth_required
 
   private
   
@@ -71,7 +73,7 @@ OoAuth requires your provider application to provide stores for authorization to
 and OAuth nonces. (You won't need these stores if you're only using OoAuth's client
 functionality.)
 
-OoAuth stores can be as simple lambdas or regular ruby objects.
+OoAuth stores can be simple lambdas or regular ruby objects.
 
 ### Authorization store
 

@@ -3,6 +3,7 @@
 .bundle
 .config
 .ruby-version
+Gemfile.lock
 coverage
 vendor
 InstalledFiles
