@@ -18,5 +18,8 @@ module OoAuth
       AUTH_ATTRIBUTES.inject({}) { |hsh, attr| hsh.update(attr => send(attr)) }
     end
     
+    def to_a
+      attributes.values
+    end
   end
 end

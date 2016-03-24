@@ -278,4 +278,12 @@ class OoAuthTest < MiniTest::Unit::TestCase
       OoAuth.signature_methods = [:hmac_sha1, :hmac_sha1024]
     end
   end
+  
+  def test_credentials_to_a
+    credentials = OoAuth::Credentials.new('consumer_key',
+                                          'consumer_secret',
+                                          'access_token',
+                                          'access_token_secret')
+    assert_equal ['consumer_key', 'consumer_secret', 'access_token', 'access_token_secret'], credentials.to_a
+  end
 end
