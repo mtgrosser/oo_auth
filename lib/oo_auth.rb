@@ -78,13 +78,13 @@ module OoAuth
     #
     # See Also: {OAuth core spec version 1.0, section 5.1}[http://oauth.net/core/1.0#rfc.section.5.1]
     def escape(value)
-      URI.escape(value.to_s, RESERVED_CHARACTERS)
+      uri_escape(value.to_s)
     rescue ArgumentError
-      URI.escape(value.to_s.force_encoding(Encoding::UTF_8), RESERVED_CHARACTERS)
+      uri_escape(value.to_s.force_encoding(Encoding::UTF_8))
     end
 
     def unescape(value)
-      URI.unescape(value.gsub('+', '%2B'))
+      URI.decode_www_form_component(value.gsub('+', '%2B'))
     end
     
     # cf. http://tools.ietf.org/html/rfc5849#section-3.4.1.1
@@ -122,6 +122,14 @@ module OoAuth
       return unless authorization = self.authorization(proxy.consumer_key, proxy.token)
       return unless Signature.verify!(proxy, authorization.credentials)
       authorization
+    end
+    
+    private
+    
+    def uri_escape(string)
+      encoding = string.encoding
+      string.b.gsub(RESERVED_CHARACTERS) { |m|
+        '%' + m.unpack('H2' * m.bytesize).join('%').upcase }.force_encoding(encoding)
     end
     
   end

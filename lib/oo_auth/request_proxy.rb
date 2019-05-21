@@ -18,7 +18,7 @@ module OoAuth
         header = header.to_s
         return unless header.start_with?('OAuth ')
         # decompose
-        params = header[6, header.length].split(',').inject({}) do |hsh, str|
+        header[6, header.length].split(',').inject({}) do |hsh, str|
           key, value = str.split('=').map { |s| OoAuth.unescape(s.strip) }
           if PARAMETERS.include?(key)
             hsh[key] = value.sub(/^\"(.*)\"$/, '\1')

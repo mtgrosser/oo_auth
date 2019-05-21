@@ -1,4 +1,4 @@
-[![Gem Version](https://badge.fury.io/rb/oo_auth.png)](http://badge.fury.io/rb/oo_auth) [![Code Climate](https://codeclimate.com/github/mtgrosser/oo_auth.png)](https://codeclimate.com/github/mtgrosser/oo_auth)
+[![Gem Version](https://badge.fury.io/rb/oo_auth.png)](http://badge.fury.io/rb/oo_auth) [![Build Status](https://travis-ci.org/mtgrosser/girocode.svg)](https://travis-ci.org/mtgrosser/girocode) [![Code Climate](https://codeclimate.com/github/mtgrosser/oo_auth.png)](https://codeclimate.com/github/mtgrosser/oo_auth)
 
 # oo_auth
 

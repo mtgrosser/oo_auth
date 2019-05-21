@@ -59,7 +59,6 @@ class OoAuthTest < MiniTest::Unit::TestCase
   end
   
   def test_signature_base_string_with_params_from_action_dispatch_request
-    http = Net::HTTP.new('photos.example.net', Net::HTTP.http_default_port)
     request = ActionDispatchMockRequest.new('GET', 'photos.example.net', 80, '/photos?file=vacation.jpg&size=original', false)
     params = {
       'oauth_version' => '1.0',
