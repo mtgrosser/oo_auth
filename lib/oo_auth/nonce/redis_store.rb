@@ -3,15 +3,14 @@ module OoAuth
     class RedisStore < AbstractStore
       attr_reader :redis, :namespace, :ttl
 
-      def initialize(options = {})
-        options.symbolize_keys!
+      def initialize(**options)
         @namespace = options.delete(:namespace)
         @ttl = options.delete(:ttl) || 15.minutes
-        @redis = Redis.new(options)
+        @redis = Redis.new(**options)
       end
 
       def remember(nonce)
-        return nonce if @redis.set(key(nonce), '1', { nx: true, ex: ttl })
+        return nonce if @redis.set(key(nonce), '1', nx: true, ex: ttl)
         false
       rescue Errno::ECONNREFUSED
         false
@@ -21,7 +20,7 @@ module OoAuth
 
       def key(nonce)
         "#{@namespace}:oo_auth_nonce:#{nonce.timestamp}:#{nonce.value}"
-      end      
+      end
       
     end
   end

@@ -109,16 +109,16 @@ module OoAuth
     end
     
     # Use this to sign Net::HTTP or ActionDispatch requests
-    def sign!(*args)
+    def sign!(*args, **kwargs)
       credentials = args.pop
-      proxy = RequestProxy.new(*args)
+      proxy = RequestProxy.new(*args, **kwargs)
       Signature.sign!(proxy, credentials)
     end
     
     # Use this in your controllers to verify the OAuth signature
     # of a request.
-    def authorize!(*args)
-      proxy = RequestProxy.new(*args)
+    def authorize!(...)
+      proxy = RequestProxy.new(...)
       return unless authorization = self.authorization(proxy.consumer_key, proxy.token)
       return unless Signature.verify!(proxy, authorization.credentials)
       authorization

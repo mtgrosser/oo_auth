@@ -220,7 +220,7 @@ class OoAuthTest < MiniTest::Unit::TestCase
   
   def test_authorization_store_proc
     OoAuth.authorization_store = lambda { |consumer_key, token| MockAuthorization.new if 'ck' == consumer_key && 'at' == token }
-    assert_equal nil, OoAuth.authorization('ck', 'to')
+    assert_nil OoAuth.authorization('ck', 'to')
     assert_kind_of MockAuthorization, OoAuth.authorization('ck', 'at')
   end
   
